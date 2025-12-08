@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Guitar Pomodoro</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo">🎸</div>
+      <h1>Guitar Pomodoro</h1>
+    </div>
+    <div class="header-actions">
+      <button id="themeToggle" class="icon-btn" title="Toggle theme">🌗</button>
+      <div class="month-nav">
+        <button id="prevMonth" class="nav-btn" title="Previous month">‹</button>
+        <div id="monthLabel" class="month-label">Month YYYY</div>
+        <button id="nextMonth" class="nav-btn" title="Next month">›</button>
+        <button id="jumpToday" class="secondary-btn" title="Jump to today">Today</button>
+      </div>
+      <div class="data-actions">
+        <button id="exportBtn" class="secondary-btn" title="Export backup JSON">Export</button>
+        <label class="secondary-btn file-label" title="Import backup JSON">
+          Import
+          <input id="importInput" type="file" accept="application/json" hidden>
+        </label>
+        <button id="linkBackupBtn" class="secondary-btn" title="Link a folder for auto backups">Link backup folder</button>
+        <span id="backupStatus" class="backup-status" aria-live="polite">Local only</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <section class="calendar-section">
+      <div class="weekday-row" id="weekdayRow"></div>
+      <div class="calendar-grid" id="calendarGrid" aria-label="Calendar"></div>
+    </section>
+    <aside class="side-panel" id="sidePanel">
+      <div class="panel-section panel-today">
+        <div class="panel-header">
+          <h2 id="selectedDateLabel">Today</h2>
+        </div>
+        <div class="timer-card" id="timerCard">
+          <div class="timer-display" id="timerDisplay">00:00</div>
+          <div class="timer-controls">
+            <button id="startBtn" class="primary-btn">Start 30:00</button>
+            <button id="pauseBtn" class="secondary-btn" disabled>Pause</button>
+            <button id="resumeBtn" class="secondary-btn" disabled>Resume</button>
+            <button id="finishBtn" class="danger-btn" disabled>Finish</button>
+          </div>
+          <div class="timer-meta">
+            <span id="completionHint">≥ 25:00 counts as completed</span>
+          </div>
+          <div class="quick-actions">
+            <button id="quickCompleteBtn" class="ghost-btn">Mark complete</button>
+            <div class="duration-edit">
+              <label for="manualMinutes">Edit minutes:</label>
+              <input id="manualMinutes" type="number" min="0" max="180" step="1" value="30">
+              <button id="applyMinutesBtn" class="ghost-btn">Apply</button>
+            </div>
+          </div>
+          <div class="status-row" id="dayStatusRow"></div>
+        </div>
+      </div>
+
+      <div class="panel-section panel-notes">
+        <div class="panel-header">
+          <h3>Notes</h3>
+          <button id="addNoteBtn" class="icon-btn" title="Add note">＋</button>
+        </div>
+        <form id="noteForm" class="note-form" hidden>
+          <textarea id="noteTextarea" rows="3" placeholder="What did you practice?"></textarea>
+          <div class="note-actions">
+            <button type="submit" class="primary-btn">Save Note</button>
+            <button type="button" id="cancelNoteBtn" class="secondary-btn">Cancel</button>
+          </div>
+        </form>
+        <ul id="notesList" class="notes-list" aria-live="polite"></ul>
+      </div>
+
+      <div class="panel-section panel-stats">
+        <div class="panel-header">
+          <h3>Stats</h3>
+        </div>
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat"><div class="label">Current streak</div><div class="value" id="currentStreak">0</div></div>
+          <div class="stat"><div class="label">Longest streak</div><div class="value" id="longestStreak">0</div></div>
+          <div class="stat"><div class="label">Days completed (month)</div><div class="value" id="daysCompletedMonth">0</div></div>
+          <div class="stat"><div class="label">Total minutes (month)</div><div class="value" id="minutesMonth">0</div></div>
+          <div class="stat"><div class="label">Completion rate (month)</div><div class="value" id="completionRate">0%</div></div>
+        </div>
+      </div>
+
+      <div class="panel-section panel-charts">
+        <div class="panel-header tabs">
+          <h3>Charts</h3>
+          <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="weekly">Weekly</button>
+            <button class="tab-btn" data-tab="monthly">Monthly</button>
+            <button class="tab-btn" data-tab="yearly">Yearly</button>
+          </div>
+        </div>
+        <div class="charts">
+          <canvas id="chartWeekly" width="400" height="160" class="chart-canvas"></canvas>
+          <canvas id="chartMonthly" width="400" height="160" class="chart-canvas" hidden></canvas>
+          <canvas id="chartYearly" width="400" height="160" class="chart-canvas" hidden></canvas>
+        </div>
+      </div>
+
+      <div class="panel-section panel-help">
+        <div class="panel-header">
+          <h3>Shortcuts</h3>
+        </div>
+        <ul class="help-list">
+          <li><kbd>S</kbd> Start • <kbd>Space</kbd> Pause/Resume • <kbd>F</kbd> Finish</li>
+          <li><kbd>T</kbd> Jump to today • <kbd>N</kbd> New note</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="app-footer">
+    <span id="saveStatus">All changes saved locally</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
