@@ -496,6 +496,7 @@
       meta.appendChild(actions);
 
       const text = document.createElement('div');
+      text.className = 'note-text';
       text.textContent = note.text;
 
       li.appendChild(meta);

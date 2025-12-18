@@ -131,7 +131,7 @@ body {
 
 /* In-cell notes preview */
 .notes-preview { margin-top: 6px; display: grid; gap: 4px; }
-.note-line { font-size: 12px; color: var(--muted); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.note-line { font-size: 12px; color: var(--muted); line-height: 1.2; white-space: pre-wrap; word-break: break-word; }
 
 /* Side panel */
 .side-panel {
@@ -166,6 +166,7 @@ body {
 .note-item { display: grid; gap: 6px; padding: 10px; border: 1px solid var(--card-border); border-radius: 10px; background: rgba(99,102,241,0.03); }
 .note-item .meta { color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; }
 .note-item .actions { display: flex; gap: 6px; }
+.note-text { white-space: pre-wrap; word-break: break-word; }
 
 /* Stats */
 .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
