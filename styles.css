@@ -178,8 +178,27 @@ body {
 .tabs { align-items: end; }
 .tab-buttons { display: flex; gap: 6px; }
 .tab-btn { background: transparent; border: 1px solid var(--card-border); color: var(--text); padding: 6px 10px; border-radius: 999px; cursor: pointer; }
-.tab-btn.active { background: var(--accent); border-color: var(--accent); }
-.chart-canvas { width: 100%; height: 180px; background: radial-gradient(1200px 600px at 20% -10%, rgba(96,165,250,0.08), transparent); border-radius: 12px; border: 1px solid var(--card-border); }
+.tab-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+.charts { position: relative; }
+.chart-canvas { display: block; width: 100%; height: 180px; background: radial-gradient(1200px 600px at 20% -10%, rgba(96,165,250,0.08), transparent); border-radius: 12px; border: 1px solid var(--card-border); }
+.chart-tooltip {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  z-index: 5;
+}
+.chart-tooltip .tt-date { color: var(--muted); }
+.chart-tooltip .tt-daily { font-weight: 700; }
+.chart-tooltip .tt-avg { color: var(--accent); }
 
 /* Buttons */
 .primary-btn, .secondary-btn, .danger-btn, .ghost-btn, .icon-btn, .nav-btn {

@@ -95,17 +95,16 @@
 
       <div class="panel-section panel-charts">
         <div class="panel-header tabs">
-          <h3>Charts</h3>
+          <h3>Practice minutes</h3>
           <div class="tab-buttons">
-            <button class="tab-btn active" data-tab="weekly">Weekly</button>
-            <button class="tab-btn" data-tab="monthly">Monthly</button>
-            <button class="tab-btn" data-tab="yearly">Yearly</button>
+            <button class="tab-btn active" data-range="30">30d</button>
+            <button class="tab-btn" data-range="90">90d</button>
+            <button class="tab-btn" data-range="365">1y</button>
           </div>
         </div>
         <div class="charts">
-          <canvas id="chartWeekly" width="400" height="160" class="chart-canvas"></canvas>
-          <canvas id="chartMonthly" width="400" height="160" class="chart-canvas" hidden></canvas>
-          <canvas id="chartYearly" width="400" height="160" class="chart-canvas" hidden></canvas>
+          <canvas id="chartTrend" class="chart-canvas"></canvas>
+          <div id="chartTooltip" class="chart-tooltip" hidden></div>
         </div>
       </div>
 

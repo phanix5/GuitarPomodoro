@@ -8,6 +8,7 @@
   const COMPLETION_THRESHOLD_MS = 25 * 60 * 1000; // 25 mins
   const TARGET_MS = 30 * 60 * 1000; // 30 mins
   const AUTO_BACKUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // once per day
+  const ROLLING_WINDOW = 7; // days in the chart's rolling-average window
 
   // ---------- DOM ----------
   const monthLabel = document.getElementById('monthLabel');
@@ -47,9 +48,8 @@
   const linkBackupBtn = document.getElementById('linkBackupBtn');
   const backupStatus = document.getElementById('backupStatus');
 
-  const chartWeekly = document.getElementById('chartWeekly');
-  const chartMonthly = document.getElementById('chartMonthly');
-  const chartYearly = document.getElementById('chartYearly');
+  const chartTrend = document.getElementById('chartTrend');
+  const chartTooltip = document.getElementById('chartTooltip');
   const chartTabButtons = Array.from(document.querySelectorAll('.tab-btn'));
 
   // ---------- State ----------
@@ -58,11 +58,14 @@
   let selectedYearMonth = getYearMonth(new Date());
   let selectedDateKey = dateKey(new Date());
   let timerInterval = null;
+  let chartRangeDays = 30; // active range preset: 30 / 90 / 365
+  let chartLayout = null;  // last-drawn point geometry, for hover hit-testing
 
   // ---------- Init ----------
   initTheme();
   initWeekdays();
   attachEvents();
+  setupChart();
   renderAll();
   maybeResumeOngoingSession();
   requestNotificationPermission();
@@ -193,11 +196,10 @@
   }
 
   function onChartTabClick(e) {
-    const tab = e.currentTarget.getAttribute('data-tab');
+    const range = parseInt(e.currentTarget.getAttribute('data-range'), 10);
+    chartRangeDays = range || 30;
     chartTabButtons.forEach(b => b.classList.toggle('active', b === e.currentTarget));
-    chartWeekly.hidden = tab !== 'weekly';
-    chartMonthly.hidden = tab !== 'monthly';
-    chartYearly.hidden = tab !== 'yearly';
+    hideChartTooltip();
     renderCharts();
   }
 
@@ -598,78 +600,187 @@
     return longest;
   }
 
-  // ---------- Charts (simple canvas bars) ----------
-  function renderCharts() {
-    renderWeeklyChart(chartWeekly.getContext('2d'));
-    renderMonthlyChart(chartMonthly.getContext('2d'));
-    renderYearlyChart(chartYearly.getContext('2d'));
-  }
-  function drawBars(ctx, values, labels, options) {
-    const { color = '#60a5fa', baselineColor = '#263041', maxValue = Math.max(1, ...values), padding = 24 } = options || {};
-    const { width, height } = ctx.canvas;
-    ctx.clearRect(0,0,width,height);
-    ctx.fillStyle = baselineColor;
-    ctx.fillRect(0, height-1, width, 1);
-    const barW = Math.max(6, Math.floor((width - padding*2) / values.length) - 8);
-    const gap = Math.max(6, Math.floor((width - padding*2 - barW*values.length) / Math.max(1, values.length-1)));
-    let x = padding;
-    values.forEach((v, i) => {
-      const h = Math.round(((v / maxValue) || 0) * (height - padding*1.6));
-      ctx.fillStyle = color;
-      ctx.fillRect(x, height - h - 2, barW, h);
-      // label
-      ctx.fillStyle = 'rgba(148,163,184,0.9)';
-      ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto';
-      const lbl = labels[i];
-      const tw = ctx.measureText(lbl).width;
-      ctx.fillText(lbl, Math.max(padding, Math.min(width - padding - tw, x + barW/2 - tw/2)), height - 6);
-      x += barW + gap;
-    });
-  }
-  function renderWeeklyChart(ctx) {
+  // ---------- Charts (line chart: daily minutes + 7-day rolling average) ----------
+  // Build [{ date, key, minutes }] for the last `rangeDays` days ending today,
+  // filling gaps with 0. Read-only over data.days.
+  function buildSeries(rangeDays) {
     const today = zeroTime(new Date());
-    const days = [];
-    const labels = [];
-    for (let i=6; i>=0; i--) {
+    const series = [];
+    for (let i = rangeDays - 1; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
       const key = dateKey(d);
       const info = data.days[key];
-      days.push(info ? Math.round((info.durationMs||0)/60000) : 0);
-      labels.push(d.toLocaleDateString(undefined, { weekday: 'short' }).slice(0,1));
+      series.push({ date: d, key, minutes: info ? Math.round((info.durationMs || 0) / 60000) : 0 });
     }
-    drawBars(ctx, days, labels, { color: '#6ee7b7' });
+    return series;
   }
-  function renderMonthlyChart(ctx) {
-    const { year, month } = selectedYearMonth;
-    const lastDay = new Date(year, month + 1, 0).getDate();
-    const values = [];
-    const labels = [];
-    for (let d=1; d<=lastDay; d++) {
-      const key = dateKey(new Date(year, month, d));
-      const info = data.days[key];
-      values.push(info ? (info.completed ? 1 : 0) : 0);
-      labels.push(String(d));
+  // Trailing simple moving average over ROLLING_WINDOW days.
+  function computeRollingAvg(series) {
+    const out = new Array(series.length);
+    let sum = 0;
+    for (let i = 0; i < series.length; i++) {
+      sum += series[i].minutes;
+      if (i >= ROLLING_WINDOW) sum -= series[i - ROLLING_WINDOW].minutes;
+      const count = Math.min(i + 1, ROLLING_WINDOW);
+      out[i] = sum / count;
     }
-    drawBars(ctx, values, labels, { color: '#60a5fa', maxValue: 1 });
+    return out;
   }
-  function renderYearlyChart(ctx) {
-    const now = new Date();
-    const year = now.getFullYear();
-    const values = [];
-    const labels = [];
-    for (let m=0; m<12; m++) {
-      const daysInMonth = new Date(year, m+1, 0).getDate();
-      let count = 0;
-      for (let d=1; d<=daysInMonth; d++) {
-        const key = dateKey(new Date(year, m, d));
-        const info = data.days[key];
-        if (info && info.completed) count++;
-      }
-      values.push(count);
-      labels.push(new Date(year, m, 1).toLocaleString(undefined, { month: 'short' }));
+  function cssVar(name, fallback) {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+  }
+  // Resize the backing store to CSS size * devicePixelRatio for crisp rendering.
+  // Returns the CSS (logical) dimensions to draw against.
+  function fitCanvas(canvas) {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const cssW = Math.max(1, Math.round(rect.width));
+    const cssH = Math.max(1, Math.round(rect.height));
+    const needW = Math.round(cssW * dpr);
+    const needH = Math.round(cssH * dpr);
+    if (canvas.width !== needW || canvas.height !== needH) {
+      canvas.width = needW;
+      canvas.height = needH;
     }
-    drawBars(ctx, values, labels, { color: '#a78bfa' });
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // draw in CSS pixels
+    return { ctx, width: cssW, height: cssH };
+  }
+
+  function renderCharts() {
+    const { ctx, width, height } = fitCanvas(chartTrend);
+    const series = buildSeries(chartRangeDays);
+    const avg = computeRollingAvg(series);
+    chartLayout = drawLineChart(ctx, width, height, series, avg);
+  }
+
+  function drawLineChart(ctx, width, height, series, avg) {
+    ctx.clearRect(0, 0, width, height);
+    const padX = 12;
+    const padTop = 12;
+    const padBottom = 22; // room for date labels
+    const plotW = width - padX * 2;
+    const plotH = height - padTop - padBottom;
+    const baseY = padTop + plotH;
+
+    const accent = cssVar('--accent', '#60a5fa');
+    const primary = cssVar('--primary', '#6ee7b7');
+    const muted = cssVar('--muted', '#94a3b8');
+    const border = cssVar('--border', '#263041');
+
+    // Baseline
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padX, baseY + 0.5);
+    ctx.lineTo(padX + plotW, baseY + 0.5);
+    ctx.stroke();
+
+    const n = series.length;
+    // Scale: at least 30 (the daily target) so short/light data isn't exaggerated.
+    const maxMinutes = Math.max(30, ...series.map(s => s.minutes));
+    const xAt = (i) => n <= 1 ? padX + plotW / 2 : padX + (i / (n - 1)) * plotW;
+    const yAt = (m) => baseY - (m / maxMinutes) * plotH;
+
+    const points = series.map((s, i) => ({ x: xAt(i), y: yAt(s.minutes), i }));
+
+    // Daily minutes: filled area + line (thin, quiet)
+    ctx.beginPath();
+    points.forEach((p, i) => { i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y); });
+    ctx.lineTo(points[points.length - 1].x, baseY);
+    ctx.lineTo(points[0].x, baseY);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(accent, 0.12);
+    ctx.fill();
+
+    ctx.beginPath();
+    points.forEach((p, i) => { i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y); });
+    ctx.strokeStyle = hexToRgba(accent, 0.55);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 7-day rolling average: bold, primary color
+    ctx.beginPath();
+    avg.forEach((m, i) => { const x = xAt(i), y = yAt(m); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.strokeStyle = primary;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // Sparse date labels (start / middle / end)
+    ctx.fillStyle = muted;
+    ctx.font = '11px system-ui, -apple-system, Segoe UI, Roboto';
+    const fmt = (d) => d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const labelIdx = n <= 1 ? [0] : [0, Math.floor((n - 1) / 2), n - 1];
+    labelIdx.forEach((idx, k) => {
+      const lbl = fmt(series[idx].date);
+      const tw = ctx.measureText(lbl).width;
+      let tx = xAt(idx) - tw / 2;
+      tx = Math.max(padX, Math.min(width - padX - tw, tx));
+      ctx.fillText(lbl, tx, height - 6);
+    });
+
+    return { points, avg, series, padX, plotW, baseY, padTop, plotH, maxMinutes };
+  }
+
+  // ---------- Chart interaction (hover tooltip) ----------
+  function setupChart() {
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { hideChartTooltip(); renderCharts(); }, 120);
+    });
+    // Redraw with theme-appropriate colors when the theme toggles.
+    themeToggle.addEventListener('click', () => { renderCharts(); });
+
+    chartTrend.addEventListener('mousemove', onChartHover);
+    chartTrend.addEventListener('mouseleave', hideChartTooltip);
+    // Touch: tap to show the nearest point.
+    chartTrend.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches[0]) onChartHover(e.touches[0]);
+    }, { passive: true });
+  }
+
+  function onChartHover(e) {
+    if (!chartLayout || !chartLayout.points.length) return;
+    const rect = chartTrend.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    // Nearest point by x
+    let nearest = chartLayout.points[0];
+    let best = Infinity;
+    for (const p of chartLayout.points) {
+      const dx = Math.abs(p.x - x);
+      if (dx < best) { best = dx; nearest = p; }
+    }
+    const s = chartLayout.series[nearest.i];
+    const avgVal = chartLayout.avg[nearest.i];
+    showChartTooltip(nearest, s, avgVal);
+  }
+
+  function showChartTooltip(point, s, avgVal) {
+    const dateStr = s.date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    chartTooltip.innerHTML =
+      `<div class="tt-date">${dateStr}</div>` +
+      `<div class="tt-daily">${s.minutes} min</div>` +
+      `<div class="tt-avg">7-day avg: ${avgVal.toFixed(1)} min</div>`;
+    chartTooltip.hidden = false;
+    // Position within the .charts wrapper (canvas offset within it is 0,0).
+    const clampedX = Math.max(4, Math.min(chartTrend.clientWidth - 4, point.x));
+    chartTooltip.style.left = clampedX + 'px';
+    chartTooltip.style.top = Math.max(0, point.y - 8) + 'px';
+  }
+  function hideChartTooltip() { chartTooltip.hidden = true; }
+
+  function hexToRgba(hex, alpha) {
+    const h = hex.replace('#', '').trim();
+    if (h.length !== 3 && h.length !== 6) return hex; // already rgb()/named; return as-is
+    const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+    const r = parseInt(full.slice(0, 2), 16);
+    const g = parseInt(full.slice(2, 4), 16);
+    const b = parseInt(full.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
   // ---------- Notes & Notifications helpers ----------
