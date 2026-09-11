@@ -394,6 +394,203 @@
             "createdAt": 1765166708484
           }
         ]
+      },
+      "2025-12-10": {
+        "durationMs": 1542497,
+        "completed": true,
+        "notes": [
+          {
+            "id": "0144d358-cf06-4f7e-a293-c090a335f20e",
+            "text": "Under The Bridge",
+            "createdAt": 1765423039902
+          }
+        ]
+      },
+      "2025-12-13": {
+        "durationMs": 1577511,
+        "completed": true,
+        "notes": [
+          {
+            "id": "a42d9ccb-e75a-4ab9-93e9-bf880d25cd04",
+            "text": "Metronome Scales\nUnder The Bridge",
+            "createdAt": 1765691956107
+          }
+        ]
+      },
+      "2025-12-14": {
+        "durationMs": 1584237,
+        "completed": true,
+        "notes": [
+          {
+            "id": "284de153-18e4-4df9-be5f-10d8017b2b08",
+            "text": "Under The Bridge",
+            "createdAt": 1765756037713
+          }
+        ]
+      },
+      "2025-12-17": {
+        "durationMs": 1522402,
+        "completed": true,
+        "notes": [
+          {
+            "id": "cd5a1afe-dc92-4f80-9e28-cd4eadb947c8",
+            "text": "Under the Bridge Singing.\nMetronome 61",
+            "createdAt": 1766020862964
+          }
+        ]
+      },
+      "2025-12-19": {
+        "durationMs": 1502524,
+        "completed": true,
+        "notes": [
+          {
+            "id": "da5822c5-3235-4600-bfa0-86d212fba875",
+            "text": "Under The Bridge",
+            "createdAt": 1766210124109
+          }
+        ]
+      },
+      "2025-12-20": {
+        "durationMs": 1507397,
+        "completed": true,
+        "notes": []
+      },
+      "2025-12-23": {
+        "durationMs": 1629623,
+        "completed": true,
+        "notes": [
+          {
+            "id": "71410c12-4c06-4871-ad68-414ccc36b326",
+            "text": "Under The Bridge\nMetronome 65 D Major",
+            "createdAt": 1766542665095
+          }
+        ]
+      },
+      "2025-12-25": {
+        "durationMs": 1558066,
+        "completed": true,
+        "notes": [
+          {
+            "id": "f315a354-883e-4fc0-9cda-85cdf62c4a82",
+            "text": "Under The Bridge",
+            "createdAt": 1766717595898
+          }
+        ]
+      },
+      "2025-12-29": {
+        "durationMs": 1511617,
+        "completed": true,
+        "notes": [
+          {
+            "id": "587e95e9-827c-468c-9560-3c6a0a777734",
+            "text": "Nutshell",
+            "createdAt": 1767065403046
+          }
+        ]
+      },
+      "2026-01-03": {
+        "durationMs": 1601575,
+        "completed": true,
+        "notes": [
+          {
+            "id": "5d5525fd-679e-4bad-b06a-ff2bd27794d3",
+            "text": "D-Major-65\nUnder The Bridge",
+            "createdAt": 1767495266556
+          }
+        ]
+      },
+      "2026-01-05": {
+        "durationMs": 1524565,
+        "completed": true,
+        "notes": [
+          {
+            "id": "af2d7cdb-c399-4437-a993-a157c778f7fe",
+            "text": "D-Major-65\nUnder The Bridge",
+            "createdAt": 1767678112071
+          }
+        ]
+      },
+      "2026-01-06": {
+        "durationMs": 1559024,
+        "completed": true,
+        "notes": [
+          {
+            "id": "c5716afb-4fbb-4a58-ab94-5c6d1b313d0c",
+            "text": "G-D-Major-65\nUnder The bridge",
+            "createdAt": 1767754114451
+          }
+        ]
+      },
+      "2026-01-08": {
+        "durationMs": 1531219,
+        "completed": true,
+        "notes": [
+          {
+            "id": "f9f5d272-5ec4-4301-971a-234054e5fc63",
+            "text": "Under the Bridge\nG-D-Major-67",
+            "createdAt": 1767937477094
+          }
+        ]
+      },
+      "2026-01-10": {
+        "durationMs": 1512165,
+        "completed": true,
+        "notes": [
+          {
+            "id": "8dba0e4a-874b-4d66-a4ba-35b53152aa67",
+            "text": "Under The Bridge\nG-D-Major-67",
+            "createdAt": 1768110053766
+          }
+        ]
+      },
+      "2026-01-13": {
+        "durationMs": 1545285,
+        "completed": true,
+        "notes": [
+          {
+            "id": "a35fade5-f0b9-4daf-b9b2-90a7ba9c949f",
+            "text": "Under The Bridge\nG-D-Major-67",
+            "createdAt": 1768367613589
+          }
+        ]
+      },
+      "2026-01-18": {
+        "durationMs": 1517658,
+        "completed": true,
+        "notes": []
+      },
+      "2026-01-20": {
+        "durationMs": 1508074,
+        "completed": true,
+        "notes": [
+          {
+            "id": "c3ec1010-a8a3-4c46-8211-fd3f0619c415",
+            "text": "GD-Maj-70",
+            "createdAt": 1768965698061
+          }
+        ]
+      },
+      "2026-01-23": {
+        "durationMs": 1587254,
+        "completed": true,
+        "notes": [
+          {
+            "id": "4f458dbb-5569-4397-a179-804e2599fd9b",
+            "text": "Major-70\nUnder The Bridge",
+            "createdAt": 1769222497938
+          }
+        ]
+      },
+      "2026-01-27": {
+        "durationMs": 1718783,
+        "completed": true,
+        "notes": [
+          {
+            "id": "1ad21bc7-6175-4635-93e4-998205ebd842",
+            "text": "Dorian-70\nUnder The Bridge",
+            "createdAt": 1769566252138
+          }
+        ]
       }
     }
   },
@@ -402,6 +599,6 @@
     "weekStartsOn": 1,
     "oneRestDay": true
   },
-  "exportedAt": "2025-12-08T05:48:01.690Z",
+  "exportedAt": "2026-01-28T02:10:53.609Z",
   "version": 1
 }
