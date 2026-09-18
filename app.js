@@ -317,7 +317,7 @@
 
     if (!session) {
       setTimerDisplay(info.durationMs || 0);
-      setTimerButtons({ start: isToday, pause: false, resume: false, finish: isToday && (info.durationMs || 0) > 0 });
+      setTimerButtons({ start: isToday, pause: false, resume: false, finish: false });
     } else {
       const elapsed = computeElapsed(session);
       setTimerDisplay(elapsed);
@@ -344,7 +344,9 @@
   }
 
   function setTimerDisplay(ms) {
-    const clamped = Math.max(0, Math.min(ms, TARGET_MS));
+    // Live session time is already capped at 30 by computeElapsed; an idle day total may exceed
+    // 30 (sessions aggregate), so only floor at 0 here and let the face show the true total.
+    const clamped = Math.max(0, ms);
     const totalSec = Math.floor(clamped / 1000);
     const mm = Math.floor(totalSec / 60);
     const ss = totalSec % 60;
@@ -365,7 +367,8 @@
     if (key !== today) { alert('You can only start the timer for today. Use manual minutes or quick complete for other days.'); return; }
     const info = ensureDay(key);
     if (info.session) { alert('A session is already in progress today. Pause/Resume or Finish it.'); return; }
-    info.session = { status: 'running', startTs: Date.now(), accumulatedMs: info.durationMs || 0 };
+    // Each session starts fresh from zero; its time is added to the day total on Finish.
+    info.session = { status: 'running', startTs: Date.now(), accumulatedMs: 0 };
     saveData();
     beginTick();
     renderSidePanel();
@@ -375,7 +378,7 @@
     if (!info || !info.session || info.session.status !== 'running') return;
     info.session.accumulatedMs = computeElapsed(info.session);
     info.session.status = 'paused';
-    info.durationMs = info.session.accumulatedMs;
+    // Do not touch info.durationMs here; the session commits to the day total only on Finish.
     saveData();
     clearTick();
     renderSidePanel();
@@ -397,9 +400,10 @@
   function finishTimer() {
     const key = selectedDateKey;
     const info = data.days[key];
-    if (!info) return;
-    const elapsed = info.session ? computeElapsed(info.session) : (info.durationMs || 0);
-    info.durationMs = Math.min(elapsed, TARGET_MS);
+    if (!info || !info.session) return;
+    // Add this session's time (capped at 30 by computeElapsed) to the day's running total.
+    const sessionElapsed = computeElapsed(info.session);
+    info.durationMs = (info.durationMs || 0) + sessionElapsed;
     info.completed = info.durationMs >= COMPLETION_THRESHOLD_MS;
     delete info.session;
     saveData();
